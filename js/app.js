@@ -315,8 +315,12 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('userPrompt').value = template.prompt;
       if (template.system) {
         document.getElementById('systemPrompt').value = template.system;
+        // Auto-expand system prompt if it was filled
+        sysContent.classList.remove('hidden');
+        sysGroup.classList.add('open');
       }
       updatePromptCount();
+      autoResizeTextarea();
     }
 
     // Reset select
@@ -670,6 +674,10 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('clearAllBtn').addEventListener('click', () => {
     document.getElementById('userPrompt').value = '';
     document.getElementById('systemPrompt').value = '';
+    // Collapse system prompt
+    sysContent.classList.add('hidden');
+    sysGroup.classList.remove('open');
+    // Reset panels
     document.querySelectorAll('.panel-body').forEach(el => {
       el.innerHTML = '<div class="panel-placeholder">Select a provider and model, then send a prompt.</div>';
     });
@@ -678,6 +686,15 @@ document.addEventListener('DOMContentLoaded', () => {
       el.className = 'panel-status';
     });
     document.querySelectorAll('.panel-footer').forEach(el => el.classList.add('hidden'));
+    document.querySelectorAll('.pinned-response').forEach(el => {
+      el.innerHTML = '';
+      el.classList.add('hidden');
+    });
+    document.querySelectorAll('.time-bar-container').forEach(el => el.remove());
+    // Reset counts
+    updatePromptCount();
+    autoResizeTextarea();
+    showToast('All cleared');
   });
 
   document.getElementById('exportBtn').addEventListener('click', () => {

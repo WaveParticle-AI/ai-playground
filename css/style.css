@@ -1060,5 +1060,7 @@ body.light .welcome-step {
   .nav-btn-label { display: none; }
   .nav-btn { padding: 0.35rem; }
   .history-menu { width: 280px; right: -2rem; }
+  .preset-menu { right: auto; left: 0; width: 220px; }
   .diff-selectors { flex-wrap: wrap; }
+  .params-row { flex-direction: column; gap: 0.5rem; }
 }
