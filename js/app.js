@@ -86,6 +86,22 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // =========================================================================
+  // Prompt character/word count
+  // =========================================================================
+
+  const promptCount = document.getElementById('promptCount');
+  const userPromptEl = document.getElementById('userPrompt');
+
+  function updatePromptCount() {
+    const text = userPromptEl.value;
+    const chars = text.length;
+    const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+    promptCount.textContent = `${chars} chars · ${words} words`;
+  }
+
+  userPromptEl.addEventListener('input', updatePromptCount);
+
+  // =========================================================================
   // Send prompt to all panels
   // =========================================================================
 
@@ -156,12 +172,14 @@ document.addEventListener('DOMContentLoaded', () => {
         statusEl.textContent = `Completed in ${elapsed}s`;
         statusEl.className = 'panel-status status-ok';
 
-        // Token info
+        // Token info + word/char count
+        const resChars = result.text.length;
+        const resWords = result.text.trim() ? result.text.trim().split(/\s+/).length : 0;
+        let infoText = `${resChars} chars · ${resWords} words`;
         if (result.usage) {
-          tokenEl.textContent = `Tokens: ${result.usage.prompt} in / ${result.usage.completion} out / ${result.usage.total} total`;
-        } else {
-          tokenEl.textContent = '';
+          infoText += ` · Tokens: ${result.usage.prompt} in / ${result.usage.completion} out / ${result.usage.total} total`;
         }
+        tokenEl.textContent = infoText;
         footerEl.classList.remove('hidden');
         footerEl.dataset.response = result.text;
 
