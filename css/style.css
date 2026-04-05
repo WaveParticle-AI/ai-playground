@@ -587,6 +587,7 @@ body {
   overflow-y: auto;
 }
 .modal-lg { max-width: 550px; }
+.modal-xl { max-width: 900px; }
 
 .modal-header {
   display: flex;
@@ -620,6 +621,96 @@ body {
   display: flex;
   justify-content: flex-end;
 }
+
+/* Diff view */
+.diff-selectors {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+.diff-select-group { flex: 1; }
+.diff-select-group .label { margin-bottom: 0.25rem; }
+.diff-select-group select { width: 100%; }
+.diff-vs {
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding-bottom: 0.4rem;
+}
+
+.diff-output {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  max-height: 50vh;
+  overflow-y: auto;
+  font-size: 0.85rem;
+  line-height: 1.7;
+}
+
+.diff-labels {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+.diff-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 0.25rem;
+}
+.diff-label-a {
+  background: rgba(239, 68, 68, 0.15);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+.diff-label-b {
+  background: rgba(34, 197, 94, 0.15);
+  color: #86efac;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.diff-content { word-wrap: break-word; }
+
+.diff-same { color: var(--text); }
+.diff-add {
+  background: rgba(34, 197, 94, 0.15);
+  color: #86efac;
+  border-radius: 2px;
+  padding: 0 2px;
+}
+.diff-remove {
+  background: rgba(239, 68, 68, 0.15);
+  color: #fca5a5;
+  text-decoration: line-through;
+  border-radius: 2px;
+  padding: 0 2px;
+}
+
+.diff-legend {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 0.75rem;
+  justify-content: center;
+}
+.diff-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.7rem;
+  color: var(--text-dim);
+}
+.diff-sample {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+}
+.diff-add-sample { background: rgba(34, 197, 94, 0.3); }
+.diff-remove-sample { background: rgba(239, 68, 68, 0.3); }
+.diff-same-sample { background: rgba(255, 255, 255, 0.15); }
 
 /* ==========================================================================
    Responsive

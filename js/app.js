@@ -683,6 +683,159 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // =========================================================================
+  // Diff view
+  // =========================================================================
+
+  const diffModal = document.getElementById('diffModal');
+  const diffSelectA = document.getElementById('diffSelectA');
+  const diffSelectB = document.getElementById('diffSelectB');
+  const diffOutput = document.getElementById('diffOutput');
+
+  function getPanelLabel(panel) {
+    const provSel = panel.querySelector('.select-provider');
+    const modSel = panel.querySelector('.select-model');
+    const pName = provSel.options[provSel.selectedIndex]?.text || 'Unknown';
+    const mName = modSel.options[modSel.selectedIndex]?.text || 'Unknown';
+    return `${pName} — ${mName}`;
+  }
+
+  function getPanelResponseText(panel) {
+    const idx = panel.dataset.index;
+    const bodyEl = panel.querySelector(`.panel-body[data-index="${idx}"]`);
+    return bodyEl?.innerText?.trim() || '';
+  }
+
+  document.getElementById('diffBtn').addEventListener('click', () => {
+    const panels = document.querySelectorAll('.response-panel');
+
+    // Populate selectors
+    [diffSelectA, diffSelectB].forEach(sel => {
+      sel.innerHTML = '';
+      panels.forEach((panel, i) => {
+        const label = getPanelLabel(panel);
+        const text = getPanelResponseText(panel);
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = label;
+        opt.disabled = !text || text === 'Select a provider and model, then send a prompt.';
+        sel.appendChild(opt);
+      });
+    });
+
+    // Default: select first two different panels
+    if (panels.length >= 2) {
+      diffSelectA.value = '0';
+      diffSelectB.value = '1';
+    }
+
+    diffOutput.innerHTML = '<div class="panel-placeholder">Select two panels and click Compare.</div>';
+    diffModal.classList.remove('hidden');
+  });
+
+  document.getElementById('closeDiffBtn').addEventListener('click', () => {
+    diffModal.classList.add('hidden');
+  });
+  diffModal.addEventListener('click', (e) => {
+    if (e.target === diffModal) diffModal.classList.add('hidden');
+  });
+
+  document.getElementById('runDiffBtn').addEventListener('click', () => {
+    const panels = Array.from(document.querySelectorAll('.response-panel'));
+    const idxA = parseInt(diffSelectA.value);
+    const idxB = parseInt(diffSelectB.value);
+
+    if (isNaN(idxA) || isNaN(idxB)) return;
+
+    const textA = getPanelResponseText(panels[idxA]);
+    const textB = getPanelResponseText(panels[idxB]);
+
+    if (!textA || !textB) {
+      diffOutput.innerHTML = '<div class="error-text">Both panels need responses. Send a prompt first.</div>';
+      return;
+    }
+
+    const labelA = getPanelLabel(panels[idxA]);
+    const labelB = getPanelLabel(panels[idxB]);
+
+    const diffHtml = computeWordDiff(textA, textB);
+    diffOutput.innerHTML = `
+      <div class="diff-labels">
+        <span class="diff-label diff-label-a">${escapeHtml(labelA)}</span>
+        <span class="diff-label diff-label-b">${escapeHtml(labelB)}</span>
+      </div>
+      <div class="diff-content">${diffHtml}</div>
+    `;
+  });
+
+  /**
+   * Simple word-level diff using longest common subsequence.
+   */
+  function computeWordDiff(textA, textB) {
+    const wordsA = textA.split(/(\s+)/);
+    const wordsB = textB.split(/(\s+)/);
+
+    // LCS table
+    const m = wordsA.length, n = wordsB.length;
+    // For very long texts, fall back to simpler approach
+    if (m * n > 500000) {
+      return `<span class="diff-remove">${escapeHtml(textA)}</span><br><br><span class="diff-add">${escapeHtml(textB)}</span>`;
+    }
+
+    const dp = Array.from({ length: m + 1 }, () => new Uint16Array(n + 1));
+    for (let i = 1; i <= m; i++) {
+      for (let j = 1; j <= n; j++) {
+        if (wordsA[i - 1] === wordsB[j - 1]) {
+          dp[i][j] = dp[i - 1][j - 1] + 1;
+        } else {
+          dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+        }
+      }
+    }
+
+    // Backtrack
+    const result = [];
+    let i = m, j = n;
+    while (i > 0 || j > 0) {
+      if (i > 0 && j > 0 && wordsA[i - 1] === wordsB[j - 1]) {
+        result.unshift({ type: 'same', text: wordsA[i - 1] });
+        i--; j--;
+      } else if (j > 0 && (i === 0 || dp[i][j - 1] >= dp[i - 1][j])) {
+        result.unshift({ type: 'add', text: wordsB[j - 1] });
+        j--;
+      } else {
+        result.unshift({ type: 'remove', text: wordsA[i - 1] });
+        i--;
+      }
+    }
+
+    // Render
+    let html = '';
+    let currentType = null;
+    let buffer = '';
+
+    for (const item of result) {
+      if (item.type !== currentType) {
+        if (buffer) {
+          html += wrapDiff(currentType, buffer);
+          buffer = '';
+        }
+        currentType = item.type;
+      }
+      buffer += item.text;
+    }
+    if (buffer) html += wrapDiff(currentType, buffer);
+
+    return html;
+  }
+
+  function wrapDiff(type, text) {
+    const escaped = escapeHtml(text).replace(/\n/g, '<br>');
+    if (type === 'add') return `<span class="diff-add">${escaped}</span>`;
+    if (type === 'remove') return `<span class="diff-remove">${escaped}</span>`;
+    return `<span class="diff-same">${escaped}</span>`;
+  }
+
+  // =========================================================================
   // Helpers
   // =========================================================================
 
