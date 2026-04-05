@@ -253,6 +253,63 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.panel-footer').forEach(el => el.classList.add('hidden'));
   });
 
+  document.getElementById('exportBtn').addEventListener('click', () => {
+    const userPrompt = document.getElementById('userPrompt').value.trim();
+    const systemPrompt = document.getElementById('systemPrompt').value.trim();
+    const temperature = tempSlider.value;
+    const maxTokens = document.getElementById('maxTokens').value;
+
+    let md = `# AI Playground — Comparison\n\n`;
+    md += `**Date:** ${new Date().toLocaleString()}\n\n`;
+
+    if (systemPrompt) {
+      md += `## System Prompt\n\n\`\`\`\n${systemPrompt}\n\`\`\`\n\n`;
+    }
+
+    md += `## Prompt\n\n${userPrompt || '(empty)'}\n\n`;
+    md += `**Temperature:** ${temperature} | **Max Tokens:** ${maxTokens}\n\n`;
+    md += `---\n\n`;
+
+    const panels = document.querySelectorAll('.response-panel');
+    let hasContent = false;
+
+    panels.forEach((panel) => {
+      const idx = panel.dataset.index;
+      const providerSel = panel.querySelector('.select-provider');
+      const modelSel = panel.querySelector('.select-model');
+      const providerName = providerSel.options[providerSel.selectedIndex]?.text || 'Unknown';
+      const modelName = modelSel.options[modelSel.selectedIndex]?.text || 'Unknown';
+      const bodyEl = panel.querySelector(`.panel-body[data-index="${idx}"]`);
+      const statusEl = panel.querySelector(`.panel-status[data-index="${idx}"]`);
+      const tokenEl = panel.querySelector(`.token-info[data-index="${idx}"]`);
+      const responseText = bodyEl?.innerText?.trim() || '';
+
+      if (!providerSel.value || responseText === 'Select a provider and model, then send a prompt.') return;
+
+      hasContent = true;
+      md += `## ${providerName} — ${modelName}\n\n`;
+      md += `**Status:** ${statusEl?.textContent || 'N/A'}\n`;
+      if (tokenEl?.textContent) {
+        md += `**${tokenEl.textContent}**\n`;
+      }
+      md += `\n${responseText}\n\n---\n\n`;
+    });
+
+    if (!hasContent) {
+      alert('No responses to export. Send a prompt first.');
+      return;
+    }
+
+    // Download
+    const blob = new Blob([md], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `ai-comparison-${new Date().toISOString().slice(0, 10)}.md`;
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
   document.getElementById('copyPromptBtn').addEventListener('click', () => {
     const text = document.getElementById('userPrompt').value;
     navigator.clipboard.writeText(text).then(() => {
