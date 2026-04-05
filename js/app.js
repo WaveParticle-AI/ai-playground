@@ -394,9 +394,13 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="panel-body" data-index="${idx}">
         <div class="panel-placeholder">Select a provider and model, then send a prompt.</div>
       </div>
+      <div class="pinned-response hidden" data-index="${idx}"></div>
       <div class="panel-footer hidden" data-index="${idx}">
         <span class="token-info" data-index="${idx}"></span>
-        <button class="btn-ghost btn-sm copy-response" data-index="${idx}">Copy</button>
+        <div class="footer-actions">
+          <button class="btn-ghost btn-sm pin-response" data-index="${idx}" title="Pin this response">Pin</button>
+          <button class="btn-ghost btn-sm copy-response" data-index="${idx}">Copy</button>
+        </div>
       </div>
     `;
     container.appendChild(panel);
@@ -426,6 +430,67 @@ document.addEventListener('DOMContentLoaded', () => {
         copyBtn.textContent = 'Copied!';
         setTimeout(() => { copyBtn.textContent = 'Copy'; }, 1500);
       });
+    }
+  });
+
+  // =========================================================================
+  // Pin response
+  // =========================================================================
+
+  document.addEventListener('click', (e) => {
+    const pinBtn = e.target.closest('.pin-response');
+    if (!pinBtn) return;
+
+    const panel = pinBtn.closest('.response-panel');
+    const idx = pinBtn.dataset.index;
+    const bodyEl = panel.querySelector(`.panel-body[data-index="${idx}"]`);
+    const pinnedEl = panel.querySelector(`.pinned-response[data-index="${idx}"]`);
+    const responseText = bodyEl?.innerHTML || '';
+
+    if (pinnedEl.classList.contains('hidden')) {
+      // Pin current response
+      const provSel = panel.querySelector('.select-provider');
+      const modSel = panel.querySelector('.select-model');
+      const statusEl = panel.querySelector(`.panel-status[data-index="${idx}"]`);
+      const pName = provSel.options[provSel.selectedIndex]?.text || '';
+      const mName = modSel.options[modSel.selectedIndex]?.text || '';
+      const statusText = statusEl?.textContent || '';
+
+      pinnedEl.innerHTML = `
+        <div class="pinned-header">
+          <span class="pinned-label">Pinned: ${escapeHtml(pName)} — ${escapeHtml(mName)}</span>
+          <span class="text-dim text-xs">${escapeHtml(statusText)}</span>
+          <button class="btn-ghost btn-sm unpin-btn" data-index="${idx}">Unpin</button>
+        </div>
+        <div class="pinned-body">${responseText}</div>
+      `;
+      pinnedEl.classList.remove('hidden');
+      pinBtn.textContent = 'Pinned';
+      pinBtn.classList.add('btn-active');
+    } else {
+      // Unpin
+      pinnedEl.innerHTML = '';
+      pinnedEl.classList.add('hidden');
+      pinBtn.textContent = 'Pin';
+      pinBtn.classList.remove('btn-active');
+    }
+  });
+
+  // Unpin via the unpin button inside pinned area
+  document.addEventListener('click', (e) => {
+    const unpinBtn = e.target.closest('.unpin-btn');
+    if (!unpinBtn) return;
+
+    const idx = unpinBtn.dataset.index;
+    const panel = unpinBtn.closest('.response-panel');
+    const pinnedEl = panel.querySelector(`.pinned-response[data-index="${idx}"]`);
+    const pinBtn = panel.querySelector(`.pin-response[data-index="${idx}"]`);
+
+    pinnedEl.innerHTML = '';
+    pinnedEl.classList.add('hidden');
+    if (pinBtn) {
+      pinBtn.textContent = 'Pin';
+      pinBtn.classList.remove('btn-active');
     }
   });
 

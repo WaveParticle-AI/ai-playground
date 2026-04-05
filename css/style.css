@@ -528,6 +528,50 @@ body {
   word-wrap: break-word;
 }
 
+/* Pinned response */
+.pinned-response {
+  border: 1px solid rgba(168, 85, 247, 0.25);
+  background: rgba(168, 85, 247, 0.06);
+  border-radius: 0.5rem;
+  margin-bottom: 0.5rem;
+  overflow: hidden;
+}
+
+.pinned-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.75rem;
+  border-bottom: 1px solid rgba(168, 85, 247, 0.15);
+  background: rgba(168, 85, 247, 0.08);
+}
+
+.pinned-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--purple);
+  flex: 1;
+}
+
+.pinned-body {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8rem;
+  line-height: 1.6;
+  max-height: 150px;
+  overflow-y: auto;
+  color: var(--text-dim);
+}
+
+.footer-actions {
+  display: flex;
+  gap: 0.375rem;
+}
+
+.btn-active {
+  color: var(--purple) !important;
+  border-color: var(--purple) !important;
+}
+
 .panel-footer {
   display: flex;
   align-items: center;
