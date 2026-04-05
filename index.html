@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Playground — WaveParticle</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Nav -->
+  <nav class="nav">
+    <div class="nav-brand">
+      <span class="text-gradient font-bold">AI PLAYGROUND</span>
+      <span class="nav-sub">by WaveParticle</span>
+    </div>
+    <div class="nav-actions">
+      <button class="btn-icon" id="settingsBtn" title="API Key Settings">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>
+        </svg>
+      </button>
+      <button class="btn-icon" id="addPanelBtn" title="Add comparison panel">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main layout -->
+  <div class="main-layout">
+
+    <!-- Left: Prompt input -->
+    <div class="prompt-section">
+      <!-- System prompt -->
+      <div class="prompt-group">
+        <label class="label">System Prompt <span class="label-hint">(optional)</span></label>
+        <textarea id="systemPrompt" class="textarea textarea-sm" rows="3"
+                  placeholder="You are a helpful assistant..."></textarea>
+      </div>
+
+      <!-- User prompt -->
+      <div class="prompt-group flex-1">
+        <label class="label">Prompt</label>
+        <textarea id="userPrompt" class="textarea textarea-lg" rows="10"
+                  placeholder="Enter your prompt here..."></textarea>
+      </div>
+
+      <!-- Parameters -->
+      <div class="params-row">
+        <div class="param">
+          <label class="label">Temperature</label>
+          <div class="param-control">
+            <input type="range" id="temperature" min="0" max="2" step="0.1" value="0.7" class="slider">
+            <span id="tempValue" class="param-value">0.7</span>
+          </div>
+        </div>
+        <div class="param">
+          <label class="label">Max Tokens</label>
+          <input type="number" id="maxTokens" class="input-sm" value="1024" min="1" max="128000">
+        </div>
+      </div>
+
+      <!-- Send -->
+      <button class="btn-primary btn-lg w-full" id="sendBtn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="22" y1="2" x2="11" y2="13"></line>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        </svg>
+        Send to All
+      </button>
+
+      <!-- Quick actions -->
+      <div class="quick-actions">
+        <button class="btn-ghost btn-sm" id="clearAllBtn">Clear All</button>
+        <button class="btn-ghost btn-sm" id="copyPromptBtn">Copy Prompt</button>
+      </div>
+    </div>
+
+    <!-- Right: Response panels -->
+    <div class="panels-section" id="panelsContainer">
+      <!-- Panel 1 -->
+      <div class="response-panel glass-panel" data-index="0">
+        <div class="panel-header">
+          <select class="select-provider" data-index="0"></select>
+          <select class="select-model" data-index="0"></select>
+          <button class="btn-icon btn-sm panel-remove" data-index="0" title="Remove panel">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+        <div class="panel-status" data-index="0"></div>
+        <div class="panel-body" data-index="0">
+          <div class="panel-placeholder">Select a provider and model, then send a prompt.</div>
+        </div>
+        <div class="panel-footer hidden" data-index="0">
+          <span class="token-info" data-index="0"></span>
+          <button class="btn-ghost btn-sm copy-response" data-index="0">Copy</button>
+        </div>
+      </div>
+
+      <!-- Panel 2 -->
+      <div class="response-panel glass-panel" data-index="1">
+        <div class="panel-header">
+          <select class="select-provider" data-index="1"></select>
+          <select class="select-model" data-index="1"></select>
+          <button class="btn-icon btn-sm panel-remove" data-index="1" title="Remove panel">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+        <div class="panel-status" data-index="1"></div>
+        <div class="panel-body" data-index="1">
+          <div class="panel-placeholder">Select a provider and model, then send a prompt.</div>
+        </div>
+        <div class="panel-footer hidden" data-index="1">
+          <span class="token-info" data-index="1"></span>
+          <button class="btn-ghost btn-sm copy-response" data-index="1">Copy</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Settings modal -->
+  <div class="modal-overlay hidden" id="settingsModal">
+    <div class="modal glass-panel modal-lg">
+      <div class="modal-header">
+        <h2 class="text-white font-semibold text-lg">API Key Settings</h2>
+        <button class="btn-icon" id="closeSettingsBtn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <p class="text-dim text-sm mb-4">Keys are stored in your browser's localStorage and never sent to any server.</p>
+      <div id="settingsForm" class="settings-form"></div>
+      <div class="settings-extra">
+        <label class="label">Ollama URL <span class="label-hint">(if not default)</span></label>
+        <input type="text" id="ollamaUrl" class="input-field" placeholder="http://localhost:11434">
+      </div>
+      <div class="modal-actions">
+        <button class="btn-primary" id="saveSettingsBtn">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/providers.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
