@@ -37,6 +37,21 @@
 
     <!-- Left: Prompt input -->
     <div class="prompt-section">
+      <!-- Prompt templates -->
+      <div class="prompt-group">
+        <div class="label-row">
+          <label class="label">Templates</label>
+          <button class="btn-ghost btn-sm" id="saveTemplateBtn" title="Save current prompt as template">+ Save Current</button>
+        </div>
+        <div class="templates-bar" id="templatesBar">
+          <select class="select-template" id="templateSelect">
+            <option value="">-- Load a template --</option>
+            <optgroup label="Built-in" id="builtinTemplates"></optgroup>
+            <optgroup label="My Templates" id="customTemplates"></optgroup>
+          </select>
+        </div>
+      </div>
+
       <!-- System prompt -->
       <div class="prompt-group">
         <label class="label">System Prompt <span class="label-hint">(optional)</span></label>

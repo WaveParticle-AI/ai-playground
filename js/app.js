@@ -86,6 +86,107 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // =========================================================================
+  // Prompt templates
+  // =========================================================================
+
+  const builtinTemplates = [
+    { name: 'Summarize', prompt: 'Summarize the following text in 3-5 bullet points:\n\n', system: '' },
+    { name: 'Explain Simply', prompt: 'Explain the following concept as if I were a beginner with no technical background:\n\n', system: '' },
+    { name: 'Translate', prompt: 'Translate the following text to [TARGET LANGUAGE]:\n\n', system: 'You are a professional translator. Preserve tone, meaning, and formatting.' },
+    { name: 'Code Review', prompt: 'Review the following code for bugs, performance issues, and best practices. Suggest improvements:\n\n```\n\n```', system: 'You are a senior software engineer doing a thorough code review.' },
+    { name: 'Write Unit Tests', prompt: 'Write comprehensive unit tests for the following code:\n\n```\n\n```', system: 'You are a testing expert. Use the most appropriate test framework for the language.' },
+    { name: 'Debug This', prompt: 'I\'m getting the following error. Help me debug it:\n\nError:\n\nCode:\n```\n\n```', system: '' },
+    { name: 'Pros and Cons', prompt: 'List the pros and cons of the following:\n\n', system: 'Be balanced and objective. Format as two clear lists.' },
+    { name: 'Rewrite Formally', prompt: 'Rewrite the following text in a professional, formal tone:\n\n', system: '' },
+    { name: 'Generate SQL', prompt: 'Write a SQL query to:\n\nTable schema:\n', system: 'You are a database expert. Write clean, efficient SQL. Add comments explaining complex parts.' },
+    { name: 'Brainstorm Ideas', prompt: 'Brainstorm 10 creative ideas for:\n\n', system: 'Think outside the box. Be creative and diverse in your suggestions.' },
+  ];
+
+  const templateSelect = document.getElementById('templateSelect');
+  const builtinGroup = document.getElementById('builtinTemplates');
+  const customGroup = document.getElementById('customTemplates');
+
+  function renderTemplateOptions() {
+    // Built-in
+    builtinGroup.innerHTML = '';
+    builtinTemplates.forEach((t, i) => {
+      const opt = document.createElement('option');
+      opt.value = `builtin:${i}`;
+      opt.textContent = t.name;
+      builtinGroup.appendChild(opt);
+    });
+
+    // Custom
+    customGroup.innerHTML = '';
+    const custom = getCustomTemplates();
+    if (custom.length === 0) {
+      const opt = document.createElement('option');
+      opt.value = '';
+      opt.disabled = true;
+      opt.textContent = '(none saved yet)';
+      customGroup.appendChild(opt);
+    } else {
+      custom.forEach((t, i) => {
+        const opt = document.createElement('option');
+        opt.value = `custom:${i}`;
+        opt.textContent = t.name;
+        customGroup.appendChild(opt);
+      });
+    }
+  }
+
+  function getCustomTemplates() {
+    try { return JSON.parse(localStorage.getItem('promptTemplates') || '[]'); }
+    catch { return []; }
+  }
+
+  templateSelect.addEventListener('change', () => {
+    const val = templateSelect.value;
+    if (!val) return;
+
+    const [type, idx] = val.split(':');
+    const index = parseInt(idx);
+    let template;
+
+    if (type === 'builtin') {
+      template = builtinTemplates[index];
+    } else {
+      template = getCustomTemplates()[index];
+    }
+
+    if (template) {
+      document.getElementById('userPrompt').value = template.prompt;
+      if (template.system) {
+        document.getElementById('systemPrompt').value = template.system;
+      }
+      updatePromptCount();
+    }
+
+    // Reset select
+    templateSelect.value = '';
+  });
+
+  document.getElementById('saveTemplateBtn').addEventListener('click', () => {
+    const prompt = document.getElementById('userPrompt').value.trim();
+    const system = document.getElementById('systemPrompt').value.trim();
+
+    if (!prompt) {
+      alert('Write a prompt first, then save it as a template.');
+      return;
+    }
+
+    const name = window.prompt('Template name:');
+    if (!name || !name.trim()) return;
+
+    const custom = getCustomTemplates();
+    custom.push({ name: name.trim(), prompt, system });
+    localStorage.setItem('promptTemplates', JSON.stringify(custom));
+    renderTemplateOptions();
+  });
+
+  renderTemplateOptions();
+
+  // =========================================================================
   // Prompt character/word count
   // =========================================================================
 
