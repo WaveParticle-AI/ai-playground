@@ -192,6 +192,52 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     await Promise.allSettled(promises);
+
+    // Render response time comparison bars
+    renderTimeBars();
+  }
+
+  function renderTimeBars() {
+    const panels = document.querySelectorAll('.response-panel');
+    const times = [];
+
+    // Collect elapsed times from status text
+    panels.forEach(panel => {
+      const idx = panel.dataset.index;
+      const statusEl = panel.querySelector(`.panel-status[data-index="${idx}"]`);
+      const text = statusEl?.textContent || '';
+      const match = text.match(/([\d.]+)s/);
+      const elapsed = match ? parseFloat(match[1]) : null;
+      times.push({ idx, elapsed, panel, statusEl, failed: statusEl?.classList.contains('status-error') });
+    });
+
+    const validTimes = times.filter(t => t.elapsed !== null);
+    if (validTimes.length < 2) return;
+
+    const maxTime = Math.max(...validTimes.map(t => t.elapsed));
+    const minTime = Math.min(...validTimes.map(t => t.elapsed));
+
+    validTimes.forEach(t => {
+      // Remove existing bar if any
+      const existing = t.panel.querySelector('.time-bar-container');
+      if (existing) existing.remove();
+
+      const pct = maxTime > 0 ? (t.elapsed / maxTime) * 100 : 100;
+      const isFastest = t.elapsed === minTime && validTimes.length > 1 && !t.failed;
+
+      const bar = document.createElement('div');
+      bar.className = 'time-bar-container';
+      bar.innerHTML = `
+        <div class="time-bar">
+          <div class="time-bar-fill ${t.failed ? 'time-bar-error' : isFastest ? 'time-bar-fastest' : ''}"
+               style="width: ${pct}%"></div>
+        </div>
+        ${isFastest ? '<span class="time-bar-badge">Fastest</span>' : ''}
+      `;
+
+      // Insert after status
+      t.statusEl.after(bar);
+    });
   }
 
   // =========================================================================
