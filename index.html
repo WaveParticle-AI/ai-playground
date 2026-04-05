@@ -32,7 +32,39 @@
         </svg>
         <span class="nav-btn-label">Diff</span>
       </button>
+      <!-- Presets dropdown -->
+      <div class="preset-dropdown" id="presetDropdown">
+        <button class="nav-btn" id="presetToggle" title="Quick panel presets">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+          </svg>
+          <span class="nav-btn-label">Presets</span>
+        </button>
+        <div class="preset-menu hidden" id="presetMenu">
+          <div class="preset-item" data-preset="gpt-vs-gemini">GPT-4o vs Gemini 2.5 Flash</div>
+          <div class="preset-item" data-preset="big-three">GPT-4o vs Gemini vs Claude Sonnet</div>
+          <div class="preset-item" data-preset="budget">GPT-4o Mini vs Gemini Flash vs Groq Llama</div>
+          <div class="preset-item" data-preset="all-flagships">All Flagships (5 panels)</div>
+        </div>
+      </div>
       <div class="nav-divider"></div>
+      <button class="nav-btn" id="themeToggle" title="Toggle light/dark mode">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="themeIcon">
+          <circle cx="12" cy="12" r="5"></circle>
+          <line x1="12" y1="1" x2="12" y2="3"></line>
+          <line x1="12" y1="21" x2="12" y2="23"></line>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+          <line x1="1" y1="12" x2="3" y2="12"></line>
+          <line x1="21" y1="12" x2="23" y2="12"></line>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        </svg>
+        <span class="nav-btn-label" id="themeLabel">Light</span>
+      </button>
       <button class="nav-btn" id="settingsBtn" title="API Key Settings">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="12" cy="12" r="3"></circle>

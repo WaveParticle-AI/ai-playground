@@ -896,6 +896,146 @@ body {
 }
 
 /* ==========================================================================
+   Preset dropdown
+   ========================================================================== */
+
+.preset-dropdown { position: relative; }
+
+.preset-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 40;
+  width: 260px;
+  background: var(--mid-bg);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  margin-top: 0.375rem;
+}
+
+.preset-item {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8rem;
+  color: var(--text);
+  cursor: pointer;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: background 0.15s;
+}
+.preset-item:hover { background: var(--surface-hover); }
+.preset-item:last-child { border-bottom: none; }
+
+/* ==========================================================================
+   Light theme
+   ========================================================================== */
+
+body.light {
+  --cyan: #0891b2;
+  --cyan-dim: rgba(8, 145, 178, 0.12);
+  --purple: #7c3aed;
+  --purple-dim: rgba(124, 58, 237, 0.1);
+  --deep-bg: #f8f9fb;
+  --mid-bg: #ffffff;
+  --surface: rgba(0, 0, 0, 0.03);
+  --surface-hover: rgba(0, 0, 0, 0.06);
+  --border: rgba(0, 0, 0, 0.12);
+  --text: #1a1a2e;
+  --text-dim: #6b7280;
+  --danger: #dc2626;
+  --success: #16a34a;
+  --warn: #d97706;
+}
+
+body.light .nav {
+  background: rgba(255, 255, 255, 0.95);
+}
+
+body.light .glass-panel {
+  background: rgba(255, 255, 255, 0.7);
+}
+
+body.light .textarea,
+body.light .input-field,
+body.light .input-sm,
+body.light .select-provider,
+body.light .select-model,
+body.light .select-template,
+body.light .chat-input {
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--text);
+}
+
+body.light .select-provider option,
+body.light .select-model option,
+body.light .select-template option,
+body.light .select-template optgroup {
+  background: #fff;
+  color: var(--text);
+}
+
+body.light .response-text pre {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+body.light .inline-code {
+  background: rgba(8, 145, 178, 0.08);
+  border-color: rgba(8, 145, 178, 0.2);
+}
+
+body.light .response-text strong { color: #111; }
+
+body.light .btn-primary {
+  background: linear-gradient(135deg, #0891b2, #0e7490);
+  color: #fff;
+}
+
+body.light .kbd-hint {
+  background: rgba(0, 0, 0, 0.08);
+  border-color: rgba(0, 0, 0, 0.15);
+  color: rgba(0, 0, 0, 0.5);
+}
+
+body.light .history-menu,
+body.light .preset-menu {
+  background: #fff;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+}
+
+body.light .modal {
+  background: #fff;
+}
+
+body.light .toast {
+  background: #fff;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+}
+
+body.light .diff-output {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+body.light .pinned-response {
+  border-color: rgba(124, 58, 237, 0.2);
+  background: rgba(124, 58, 237, 0.04);
+}
+
+body.light .pinned-header {
+  background: rgba(124, 58, 237, 0.06);
+  border-color: rgba(124, 58, 237, 0.1);
+}
+
+body.light .error-text {
+  background: rgba(220, 38, 38, 0.06);
+  border-color: rgba(220, 38, 38, 0.15);
+}
+
+body.light .welcome-step {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+/* ==========================================================================
    Responsive
    ========================================================================== */
 

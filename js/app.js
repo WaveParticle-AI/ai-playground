@@ -99,6 +99,137 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // =========================================================================
+  // Light/dark theme toggle
+  // =========================================================================
+
+  const themeLabel = document.getElementById('themeLabel');
+  const themeIcon = document.getElementById('themeIcon');
+
+  function applyTheme(theme) {
+    if (theme === 'light') {
+      document.body.classList.add('light');
+      themeLabel.textContent = 'Dark';
+      themeIcon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>';
+    } else {
+      document.body.classList.remove('light');
+      themeLabel.textContent = 'Light';
+      themeIcon.innerHTML = '<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>';
+    }
+    localStorage.setItem('theme', theme);
+  }
+
+  // Load saved theme
+  applyTheme(localStorage.getItem('theme') || 'dark');
+
+  document.getElementById('themeToggle').addEventListener('click', () => {
+    const current = document.body.classList.contains('light') ? 'light' : 'dark';
+    applyTheme(current === 'light' ? 'dark' : 'light');
+  });
+
+  // =========================================================================
+  // Panel presets
+  // =========================================================================
+
+  const presetMenu = document.getElementById('presetMenu');
+
+  const presetConfigs = {
+    'gpt-vs-gemini': [
+      { provider: 'openai', model: 'gpt-4o' },
+      { provider: 'gemini', model: 'gemini-2.5-flash' },
+    ],
+    'big-three': [
+      { provider: 'openai', model: 'gpt-4o' },
+      { provider: 'gemini', model: 'gemini-2.5-flash' },
+      { provider: 'anthropic', model: 'claude-sonnet-4-0' },
+    ],
+    'budget': [
+      { provider: 'openai', model: 'gpt-4o-mini' },
+      { provider: 'gemini', model: 'gemini-2.0-flash' },
+      { provider: 'groq', model: 'llama-3.3-70b-versatile' },
+    ],
+    'all-flagships': [
+      { provider: 'openai', model: 'gpt-4o' },
+      { provider: 'gemini', model: 'gemini-2.5-flash' },
+      { provider: 'anthropic', model: 'claude-sonnet-4-0' },
+      { provider: 'deepseek', model: 'deepseek-chat' },
+      { provider: 'mistral', model: 'mistral-large-latest' },
+    ],
+  };
+
+  document.getElementById('presetToggle').addEventListener('click', (e) => {
+    e.stopPropagation();
+    presetMenu.classList.toggle('hidden');
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('#presetDropdown')) {
+      presetMenu.classList.add('hidden');
+    }
+  });
+
+  presetMenu.addEventListener('click', (e) => {
+    const item = e.target.closest('.preset-item');
+    if (!item) return;
+
+    const config = presetConfigs[item.dataset.preset];
+    if (!config) return;
+
+    // Clear existing panels
+    const container = document.getElementById('panelsContainer');
+    container.innerHTML = '';
+    panelCount = 0;
+
+    // Create panels for the preset
+    config.forEach(cfg => {
+      const idx = panelCount++;
+      const panel = document.createElement('div');
+      panel.className = 'response-panel glass-panel';
+      panel.dataset.index = idx;
+      panel.innerHTML = `
+        <div class="panel-header">
+          <select class="select-provider" data-index="${idx}"></select>
+          <select class="select-model" data-index="${idx}"></select>
+          <button class="btn-icon btn-sm panel-retry" data-index="${idx}" title="Retry this panel">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="23 4 23 10 17 10"></polyline>
+              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+            </svg>
+          </button>
+          <button class="btn-icon btn-sm panel-remove" data-index="${idx}" title="Remove panel">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+        <div class="panel-status" data-index="${idx}"></div>
+        <div class="panel-body" data-index="${idx}">
+          <div class="panel-placeholder">Select a provider and model, then send a prompt.</div>
+        </div>
+        <div class="pinned-response hidden" data-index="${idx}"></div>
+        <div class="panel-footer hidden" data-index="${idx}">
+          <span class="token-info" data-index="${idx}"></span>
+          <div class="footer-actions">
+            <button class="btn-ghost btn-sm pin-response" data-index="${idx}" title="Pin this response">Pin</button>
+            <button class="btn-ghost btn-sm copy-response" data-index="${idx}">Copy</button>
+          </div>
+        </div>
+      `;
+      container.appendChild(panel);
+
+      const provSel = panel.querySelector('.select-provider');
+      const modSel = panel.querySelector('.select-model');
+      populateProviderSelect(provSel);
+      provSel.value = cfg.provider;
+      populateModelSelect(modSel, cfg.provider);
+      modSel.value = cfg.model;
+    });
+
+    presetMenu.classList.add('hidden');
+    showToast(`Loaded preset: ${item.textContent}`);
+  });
+
+  // =========================================================================
   // Collapsible system prompt
   // =========================================================================
 
@@ -948,6 +1079,8 @@ document.addEventListener('DOMContentLoaded', () => {
         diffModal.classList.add('hidden');
       } else if (!historyMenu.classList.contains('hidden')) {
         historyMenu.classList.add('hidden');
+      } else if (!presetMenu.classList.contains('hidden')) {
+        presetMenu.classList.add('hidden');
       }
     }
   });
