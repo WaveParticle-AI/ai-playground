@@ -216,6 +216,72 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  async function sendToPanel(panel, userPrompt, systemPrompt, temperature, maxTokens) {
+    const idx = panel.dataset.index;
+    const providerId = panel.querySelector('.select-provider').value;
+    const modelId = panel.querySelector('.select-model').value;
+    const bodyEl = panel.querySelector(`.panel-body[data-index="${idx}"]`);
+    const statusEl = panel.querySelector(`.panel-status[data-index="${idx}"]`);
+    const footerEl = panel.querySelector(`.panel-footer[data-index="${idx}"]`);
+    const tokenEl = panel.querySelector(`.token-info[data-index="${idx}"]`);
+
+    if (!providerId || !modelId) {
+      statusEl.textContent = 'Select a provider and model first.';
+      statusEl.className = 'panel-status status-warn';
+      return;
+    }
+
+    // Check if key is set (except Ollama)
+    const provider = registry[providerId];
+    if (provider.keyName && !localStorage.getItem(provider.keyName)) {
+      statusEl.textContent = `No API key set for ${provider.name}. Go to Settings.`;
+      statusEl.className = 'panel-status status-error';
+      return;
+    }
+
+    // Remove existing time bar
+    const existingBar = panel.querySelector('.time-bar-container');
+    if (existingBar) existingBar.remove();
+
+    // Loading state
+    bodyEl.innerHTML = '<div class="loading"><div class="spinner"></div><span>Generating...</span></div>';
+    statusEl.textContent = '';
+    statusEl.className = 'panel-status';
+    footerEl.classList.add('hidden');
+
+    const startTime = performance.now();
+
+    try {
+      const result = await Providers.generate(providerId, modelId, [
+        { role: 'user', content: userPrompt }
+      ], { systemPrompt, temperature, maxTokens });
+
+      const elapsed = ((performance.now() - startTime) / 1000).toFixed(1);
+
+      // Render response
+      bodyEl.innerHTML = `<div class="response-text">${escapeAndFormat(result.text)}</div>`;
+      statusEl.textContent = `Completed in ${elapsed}s`;
+      statusEl.className = 'panel-status status-ok';
+
+      // Token info + word/char count
+      const resChars = result.text.length;
+      const resWords = result.text.trim() ? result.text.trim().split(/\s+/).length : 0;
+      let infoText = `${resChars} chars · ${resWords} words`;
+      if (result.usage) {
+        infoText += ` · Tokens: ${result.usage.prompt} in / ${result.usage.completion} out / ${result.usage.total} total`;
+      }
+      tokenEl.textContent = infoText;
+      footerEl.classList.remove('hidden');
+      footerEl.dataset.response = result.text;
+
+    } catch (err) {
+      const elapsed = ((performance.now() - startTime) / 1000).toFixed(1);
+      bodyEl.innerHTML = `<div class="error-text">${escapeHtml(err.message)}</div>`;
+      statusEl.textContent = `Failed after ${elapsed}s`;
+      statusEl.className = 'panel-status status-error';
+    }
+  }
+
   async function sendToAll() {
     const userPrompt = document.getElementById('userPrompt').value.trim();
     if (!userPrompt) return;
@@ -228,75 +294,31 @@ document.addEventListener('DOMContentLoaded', () => {
     const maxTokens = parseInt(document.getElementById('maxTokens').value) || 1024;
 
     const panels = document.querySelectorAll('.response-panel');
-
-    // Fire all panels in parallel
-    const promises = Array.from(panels).map(async (panel) => {
-      const idx = panel.dataset.index;
-      const providerId = panel.querySelector('.select-provider').value;
-      const modelId = panel.querySelector('.select-model').value;
-      const bodyEl = panel.querySelector(`.panel-body[data-index="${idx}"]`);
-      const statusEl = panel.querySelector(`.panel-status[data-index="${idx}"]`);
-      const footerEl = panel.querySelector(`.panel-footer[data-index="${idx}"]`);
-      const tokenEl = panel.querySelector(`.token-info[data-index="${idx}"]`);
-
-      if (!providerId || !modelId) {
-        statusEl.textContent = 'Select a provider and model first.';
-        statusEl.className = 'panel-status status-warn';
-        return;
-      }
-
-      // Check if key is set (except Ollama)
-      const provider = registry[providerId];
-      if (provider.keyName && !localStorage.getItem(provider.keyName)) {
-        statusEl.textContent = `No API key set for ${provider.name}. Go to Settings.`;
-        statusEl.className = 'panel-status status-error';
-        return;
-      }
-
-      // Loading state
-      bodyEl.innerHTML = '<div class="loading"><div class="spinner"></div><span>Generating...</span></div>';
-      statusEl.textContent = '';
-      statusEl.className = 'panel-status';
-      footerEl.classList.add('hidden');
-
-      const startTime = performance.now();
-
-      try {
-        const result = await Providers.generate(providerId, modelId, [
-          { role: 'user', content: userPrompt }
-        ], { systemPrompt, temperature, maxTokens });
-
-        const elapsed = ((performance.now() - startTime) / 1000).toFixed(1);
-
-        // Render response
-        bodyEl.innerHTML = `<div class="response-text">${escapeAndFormat(result.text)}</div>`;
-        statusEl.textContent = `Completed in ${elapsed}s`;
-        statusEl.className = 'panel-status status-ok';
-
-        // Token info + word/char count
-        const resChars = result.text.length;
-        const resWords = result.text.trim() ? result.text.trim().split(/\s+/).length : 0;
-        let infoText = `${resChars} chars · ${resWords} words`;
-        if (result.usage) {
-          infoText += ` · Tokens: ${result.usage.prompt} in / ${result.usage.completion} out / ${result.usage.total} total`;
-        }
-        tokenEl.textContent = infoText;
-        footerEl.classList.remove('hidden');
-        footerEl.dataset.response = result.text;
-
-      } catch (err) {
-        const elapsed = ((performance.now() - startTime) / 1000).toFixed(1);
-        bodyEl.innerHTML = `<div class="error-text">${escapeHtml(err.message)}</div>`;
-        statusEl.textContent = `Failed after ${elapsed}s`;
-        statusEl.className = 'panel-status status-error';
-      }
-    });
-
+    const promises = Array.from(panels).map(panel => sendToPanel(panel, userPrompt, systemPrompt, temperature, maxTokens));
     await Promise.allSettled(promises);
 
     // Render response time comparison bars
     renderTimeBars();
   }
+
+  // Retry single panel
+  document.addEventListener('click', async (e) => {
+    const retryBtn = e.target.closest('.panel-retry');
+    if (!retryBtn) return;
+
+    const panel = retryBtn.closest('.response-panel');
+    if (!panel) return;
+
+    const userPrompt = document.getElementById('userPrompt').value.trim();
+    if (!userPrompt) return;
+
+    const systemPrompt = document.getElementById('systemPrompt').value.trim();
+    const temperature = parseFloat(tempSlider.value);
+    const maxTokens = parseInt(document.getElementById('maxTokens').value) || 1024;
+
+    await sendToPanel(panel, userPrompt, systemPrompt, temperature, maxTokens);
+    renderTimeBars();
+  });
 
   function renderTimeBars() {
     const panels = document.querySelectorAll('.response-panel');
@@ -355,6 +377,12 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="panel-header">
         <select class="select-provider" data-index="${idx}"></select>
         <select class="select-model" data-index="${idx}"></select>
+        <button class="btn-icon btn-sm panel-retry" data-index="${idx}" title="Retry this panel">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="23 4 23 10 17 10"></polyline>
+            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+          </svg>
+        </button>
         <button class="btn-icon btn-sm panel-remove" data-index="${idx}" title="Remove panel">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="18" y1="6" x2="6" y2="18"></line>
