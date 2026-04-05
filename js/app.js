@@ -213,7 +213,16 @@ document.addEventListener('DOMContentLoaded', () => {
     promptCount.textContent = `${chars} chars · ${words} words`;
   }
 
-  userPromptEl.addEventListener('input', updatePromptCount);
+  function autoResizeTextarea() {
+    userPromptEl.style.height = 'auto';
+    const maxHeight = window.innerHeight * 0.45;
+    userPromptEl.style.height = Math.min(userPromptEl.scrollHeight, maxHeight) + 'px';
+  }
+
+  userPromptEl.addEventListener('input', () => {
+    updatePromptCount();
+    autoResizeTextarea();
+  });
 
   // =========================================================================
   // Send prompt to all panels
