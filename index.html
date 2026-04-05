@@ -46,7 +46,27 @@
 
       <!-- User prompt -->
       <div class="prompt-group flex-1">
-        <label class="label">Prompt</label>
+        <div class="label-row">
+          <label class="label">Prompt</label>
+          <div class="history-dropdown" id="historyDropdown">
+            <button class="btn-ghost btn-sm history-toggle" id="historyToggle" title="Prompt history">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+              History
+            </button>
+            <div class="history-menu hidden" id="historyMenu">
+              <div class="history-header">
+                <span class="text-dim text-xs">Recent Prompts</span>
+                <button class="btn-ghost btn-sm" id="clearHistoryBtn">Clear All</button>
+              </div>
+              <div class="history-list" id="historyList">
+                <div class="history-empty text-dim text-xs">No history yet</div>
+              </div>
+            </div>
+          </div>
+        </div>
         <textarea id="userPrompt" class="textarea textarea-lg" rows="10"
                   placeholder="Enter your prompt here..."></textarea>
       </div>

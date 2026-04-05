@@ -103,6 +103,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const userPrompt = document.getElementById('userPrompt').value.trim();
     if (!userPrompt) return;
 
+    // Save to history
+    saveToHistory(userPrompt);
+
     const systemPrompt = document.getElementById('systemPrompt').value.trim();
     const temperature = parseFloat(tempSlider.value);
     const maxTokens = parseInt(document.getElementById('maxTokens').value) || 1024;
@@ -333,6 +336,101 @@ document.addEventListener('DOMContentLoaded', () => {
 
     settingsModal.classList.add('hidden');
   });
+
+  // =========================================================================
+  // Prompt history
+  // =========================================================================
+
+  const MAX_HISTORY = 20;
+  const historyMenu = document.getElementById('historyMenu');
+  const historyList = document.getElementById('historyList');
+
+  document.getElementById('historyToggle').addEventListener('click', (e) => {
+    e.stopPropagation();
+    historyMenu.classList.toggle('hidden');
+    if (!historyMenu.classList.contains('hidden')) {
+      renderHistory();
+    }
+  });
+
+  // Close history menu when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('#historyDropdown')) {
+      historyMenu.classList.add('hidden');
+    }
+  });
+
+  document.getElementById('clearHistoryBtn').addEventListener('click', () => {
+    localStorage.removeItem('promptHistory');
+    renderHistory();
+  });
+
+  function getHistory() {
+    try {
+      return JSON.parse(localStorage.getItem('promptHistory') || '[]');
+    } catch { return []; }
+  }
+
+  function saveToHistory(prompt) {
+    let history = getHistory();
+    // Remove duplicate if exists
+    history = history.filter(h => h.text !== prompt);
+    // Add to front
+    history.unshift({ text: prompt, timestamp: Date.now() });
+    // Keep max
+    if (history.length > MAX_HISTORY) history = history.slice(0, MAX_HISTORY);
+    localStorage.setItem('promptHistory', JSON.stringify(history));
+  }
+
+  function renderHistory() {
+    const history = getHistory();
+    if (!history.length) {
+      historyList.innerHTML = '<div class="history-empty text-dim text-xs">No history yet</div>';
+      return;
+    }
+    historyList.innerHTML = history.map((h, i) => {
+      const preview = h.text.length > 80 ? h.text.slice(0, 80) + '...' : h.text;
+      const time = new Date(h.timestamp).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+      return `
+        <div class="history-item" data-index="${i}">
+          <div class="history-item-content" data-index="${i}">
+            <div class="history-preview">${escapeHtml(preview)}</div>
+            <div class="history-time text-dim text-xs">${time}</div>
+          </div>
+          <button class="btn-icon btn-sm history-delete" data-index="${i}" title="Delete">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+      `;
+    }).join('');
+
+    // Click to load prompt
+    historyList.querySelectorAll('.history-item-content').forEach(el => {
+      el.addEventListener('click', () => {
+        const idx = parseInt(el.dataset.index);
+        const history = getHistory();
+        if (history[idx]) {
+          document.getElementById('userPrompt').value = history[idx].text;
+          historyMenu.classList.add('hidden');
+        }
+      });
+    });
+
+    // Click to delete
+    historyList.querySelectorAll('.history-delete').forEach(el => {
+      el.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const idx = parseInt(el.dataset.index);
+        const history = getHistory();
+        history.splice(idx, 1);
+        localStorage.setItem('promptHistory', JSON.stringify(history));
+        renderHistory();
+      });
+    });
+  }
 
   // =========================================================================
   // Helpers
