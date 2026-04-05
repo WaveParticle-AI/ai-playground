@@ -165,6 +165,34 @@ body {
   flex-direction: column;
 }
 
+/* Collapsible */
+.collapsible-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  width: 100%;
+  text-align: left;
+}
+.collapsible-toggle .label { margin-bottom: 0; cursor: pointer; }
+.collapsible-toggle:hover .label { color: var(--text); }
+
+.collapse-arrow {
+  transition: transform 0.2s;
+  color: var(--text-dim);
+  flex-shrink: 0;
+}
+.collapsible.open .collapse-arrow {
+  transform: rotate(90deg);
+}
+
+.collapsible-content {
+  padding-top: 0.375rem;
+}
+
 .label-row {
   display: flex;
   align-items: center;

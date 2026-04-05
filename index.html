@@ -59,11 +59,18 @@
         </div>
       </div>
 
-      <!-- System prompt -->
-      <div class="prompt-group">
-        <label class="label">System Prompt <span class="label-hint">(optional)</span></label>
-        <textarea id="systemPrompt" class="textarea textarea-sm" rows="3"
-                  placeholder="You are a helpful assistant..."></textarea>
+      <!-- System prompt (collapsible) -->
+      <div class="prompt-group collapsible">
+        <button class="collapsible-toggle" id="systemPromptToggle">
+          <svg class="collapse-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+          <span class="label">System Prompt <span class="label-hint">(optional)</span></span>
+        </button>
+        <div class="collapsible-content hidden" id="systemPromptContent">
+          <textarea id="systemPrompt" class="textarea textarea-sm" rows="3"
+                    placeholder="You are a helpful assistant..."></textarea>
+        </div>
       </div>
 
       <!-- User prompt -->

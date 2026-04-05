@@ -86,6 +86,19 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // =========================================================================
+  // Collapsible system prompt
+  // =========================================================================
+
+  const sysToggle = document.getElementById('systemPromptToggle');
+  const sysContent = document.getElementById('systemPromptContent');
+  const sysGroup = sysToggle.closest('.collapsible');
+
+  sysToggle.addEventListener('click', () => {
+    sysContent.classList.toggle('hidden');
+    sysGroup.classList.toggle('open');
+  });
+
+  // =========================================================================
   // Prompt templates
   // =========================================================================
 
