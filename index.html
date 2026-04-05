@@ -266,6 +266,38 @@
     </div>
   </div>
 
+  <!-- Welcome overlay (first time only) -->
+  <div class="modal-overlay" id="welcomeOverlay">
+    <div class="modal glass-panel welcome-modal">
+      <h2 class="text-gradient font-bold text-lg">Welcome to AI Playground</h2>
+      <p class="text-dim text-sm" style="margin: 0.75rem 0 1.25rem;">Compare AI models side-by-side in 3 steps:</p>
+      <div class="welcome-steps">
+        <div class="welcome-step">
+          <div class="welcome-step-num">1</div>
+          <div>
+            <strong class="text-white">Set your API keys</strong>
+            <p class="text-dim text-xs">Click <strong>Keys</strong> in the top bar. Keys stay in your browser.</p>
+          </div>
+        </div>
+        <div class="welcome-step">
+          <div class="welcome-step-num">2</div>
+          <div>
+            <strong class="text-white">Write a prompt</strong>
+            <p class="text-dim text-xs">Or pick a template. Set system prompt if needed.</p>
+          </div>
+        </div>
+        <div class="welcome-step">
+          <div class="welcome-step-num">3</div>
+          <div>
+            <strong class="text-white">Send to all</strong>
+            <p class="text-dim text-xs">Hit <strong>Ctrl+Enter</strong> or click Send. Compare results.</p>
+          </div>
+        </div>
+      </div>
+      <button class="btn-primary w-full" id="welcomeDismiss" style="margin-top: 1.25rem;">Got it, let's go</button>
+    </div>
+  </div>
+
   <script src="js/providers.js"></script>
   <script src="js/app.js"></script>
 </body>

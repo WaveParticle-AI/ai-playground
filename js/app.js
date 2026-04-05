@@ -7,6 +7,19 @@ document.addEventListener('DOMContentLoaded', () => {
   let panelCount = 2; // start with 2 panels
 
   // =========================================================================
+  // First-time welcome
+  // =========================================================================
+
+  const welcomeOverlay = document.getElementById('welcomeOverlay');
+  if (localStorage.getItem('welcomeDismissed')) {
+    welcomeOverlay.classList.add('hidden');
+  }
+  document.getElementById('welcomeDismiss').addEventListener('click', () => {
+    welcomeOverlay.classList.add('hidden');
+    localStorage.setItem('welcomeDismissed', '1');
+  });
+
+  // =========================================================================
   // Initialize provider/model dropdowns
   // =========================================================================
 
@@ -265,19 +278,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const existingBar = panel.querySelector('.time-bar-container');
     if (existingBar) existingBar.remove();
 
-    // Loading state
+    // Loading state with live timer
     bodyEl.innerHTML = '<div class="loading"><div class="spinner"></div><span>Generating...</span></div>';
-    statusEl.textContent = '';
-    statusEl.className = 'panel-status';
+    statusEl.textContent = '0.0s';
+    statusEl.className = 'panel-status status-timing';
     footerEl.classList.add('hidden');
 
     const startTime = performance.now();
+    const loadingTimer = setInterval(() => {
+      const elapsed = ((performance.now() - startTime) / 1000).toFixed(1);
+      statusEl.textContent = `${elapsed}s`;
+    }, 100);
 
     try {
       const result = await Providers.generate(providerId, modelId, [
         { role: 'user', content: userPrompt }
       ], { systemPrompt, temperature, maxTokens });
 
+      clearInterval(loadingTimer);
       const elapsed = ((performance.now() - startTime) / 1000).toFixed(1);
 
       // Render response
@@ -297,6 +315,7 @@ document.addEventListener('DOMContentLoaded', () => {
       footerEl.dataset.response = result.text;
 
     } catch (err) {
+      clearInterval(loadingTimer);
       const elapsed = ((performance.now() - startTime) / 1000).toFixed(1);
       bodyEl.innerHTML = `<div class="error-text">${escapeHtml(err.message)}</div>`;
       statusEl.textContent = `Failed after ${elapsed}s`;
@@ -448,10 +467,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const idx = copyBtn.dataset.index;
       const bodyEl = document.querySelector(`.panel-body[data-index="${idx}"]`);
       const text = bodyEl?.innerText || '';
-      navigator.clipboard.writeText(text).then(() => {
-        copyBtn.textContent = 'Copied!';
-        setTimeout(() => { copyBtn.textContent = 'Copy'; }, 1500);
-      });
+      navigator.clipboard.writeText(text).then(() => showToast('Response copied!'));
     }
   });
 
@@ -588,15 +604,12 @@ document.addEventListener('DOMContentLoaded', () => {
     a.download = `ai-comparison-${new Date().toISOString().slice(0, 10)}.md`;
     a.click();
     URL.revokeObjectURL(url);
+    showToast('Comparison exported!');
   });
 
   document.getElementById('copyPromptBtn').addEventListener('click', () => {
     const text = document.getElementById('userPrompt').value;
-    navigator.clipboard.writeText(text).then(() => {
-      const btn = document.getElementById('copyPromptBtn');
-      btn.textContent = 'Copied!';
-      setTimeout(() => { btn.textContent = 'Copy Prompt'; }, 1500);
-    });
+    navigator.clipboard.writeText(text).then(() => showToast('Prompt copied!'));
   });
 
   // =========================================================================
@@ -672,6 +685,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     settingsModal.classList.add('hidden');
+    showToast('API keys saved!');
   });
 
   // =========================================================================
@@ -920,6 +934,45 @@ document.addEventListener('DOMContentLoaded', () => {
     if (type === 'add') return `<span class="diff-add">${escaped}</span>`;
     if (type === 'remove') return `<span class="diff-remove">${escaped}</span>`;
     return `<span class="diff-same">${escaped}</span>`;
+  }
+
+  // =========================================================================
+  // Escape to close modals
+  // =========================================================================
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      if (!settingsModal.classList.contains('hidden')) {
+        settingsModal.classList.add('hidden');
+      } else if (!diffModal.classList.contains('hidden')) {
+        diffModal.classList.add('hidden');
+      } else if (!historyMenu.classList.contains('hidden')) {
+        historyMenu.classList.add('hidden');
+      }
+    }
+  });
+
+  // =========================================================================
+  // Toast notifications
+  // =========================================================================
+
+  function showToast(message) {
+    // Remove existing toast
+    const existing = document.querySelector('.toast');
+    if (existing) existing.remove();
+
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+
+    // Trigger animation
+    requestAnimationFrame(() => toast.classList.add('toast-visible'));
+
+    setTimeout(() => {
+      toast.classList.remove('toast-visible');
+      setTimeout(() => toast.remove(), 300);
+    }, 2000);
   }
 
   // =========================================================================
